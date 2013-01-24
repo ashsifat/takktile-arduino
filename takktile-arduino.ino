@@ -1,4 +1,5 @@
 #include <Wire.h>
+// Some logic copied from https://github.com/adafruit/Adafruit_MPL115A2/
 #define NUM_SENSORS 5
 float a0[NUM_SENSORS];
 float b1[NUM_SENSORS];
@@ -81,6 +82,21 @@ void readNum(byte num, float* oTemp, float* oPressure)
   //*oPressure = pressure;
   //*oTemp = temp;
 }
+// Copied from http://www.varesano.net/blog/fabio/sending-float-variables-over-serial-without-loss-precision-arduino-and-processing
+void serialFloatPrint(float f) {
+  byte * b = (byte *) &f;
+  for(int i=0; i<4; i++) {
+    
+    byte b1 = (b[i] >> 4) & 0x0f;
+    byte b2 = (b[i] & 0x0f);
+    
+    char c1 = (b1 < 10) ? ('0' + b1) : 'A' + b1 - 10;
+    char c2 = (b2 < 10) ? ('0' + b2) : 'A' + b2 - 10;
+    
+    Serial.print(c1);
+    Serial.print(c2);
+  }
+}
 void loop() {
   initialize();
   
@@ -88,13 +104,10 @@ void loop() {
   {
     float oTemp, oPressure;
     readNum(i, &oTemp, &oPressure);
-    // Send bytes over serial instead?
-    Serial.print(oTemp);
-    Serial.print(' ');
-    Serial.print(oPressure);
-    Serial.print(' ');
+    serialFloatPrint(oTemp);
+    serialFloatPrint(oPressure);
   }
-  Serial.print('\n');
+  Serial.println();
 }
 
 
