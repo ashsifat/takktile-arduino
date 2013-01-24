@@ -93,8 +93,8 @@ void serialFloatPrint(float f) {
     char c1 = (b1 < 10) ? ('0' + b1) : 'A' + b1 - 10;
     char c2 = (b2 < 10) ? ('0' + b2) : 'A' + b2 - 10;
     
-    Serial.print(c1);
-    Serial.print(c2);
+    Serial.write(c1);
+    Serial.write(c2);
   }
 }
 void loop() {
@@ -104,8 +104,10 @@ void loop() {
   {
     float oTemp, oPressure;
     readNum(i, &oTemp, &oPressure);
-    serialFloatPrint(oTemp);
-    serialFloatPrint(oPressure);
+    Serial.print(oTemp,HEX);
+    Serial.print(oPressure,HEX);
+    //serialFloatPrint(oTemp);
+    //serialFloatPrint(oPressure);
   }
   Serial.println();
 }

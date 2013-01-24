@@ -8,9 +8,11 @@ try:
     while True:
         data = arduino.readline()
         if data:
-            print str(i) + " " + data
-            f.write(data)
+            #/print str(i) + " " + data
+            #f.write(data)
             i+=1
+            if i%100==0:
+                exit()
 except:
     print "Connection failed"
 f.close()
