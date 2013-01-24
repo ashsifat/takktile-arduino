@@ -1,6 +1,7 @@
 #include <Wire.h>
 // Some logic copied from https://github.com/adafruit/Adafruit_MPL115A2/
 #define NUM_SENSORS 5
+#define PRECISION 10000
 float a0[NUM_SENSORS];
 float b1[NUM_SENSORS];
 float b2[NUM_SENSORS];
@@ -104,8 +105,18 @@ void loop() {
   {
     float oTemp, oPressure;
     readNum(i, &oTemp, &oPressure);
-    Serial.print(oTemp,HEX);
-    Serial.print(oPressure,HEX);
+    uint16_t int_temp = (uint16_t)oTemp;
+    uint16_t frac_temp = (oTemp - int_temp)*PRECISION;
+    uint16_t int_pressure = (uint16_t)oPressure;
+    uint16_t frac_pressure = (oPressure - int_pressure)*PRECISION;
+    Serial.print(int_temp);
+    Serial.print('.');
+    Serial.print(frac_temp);
+    Serial.print(' ');
+    Serial.print(int_pressure);
+    Serial.print('.');
+    Serial.print(frac_pressure);
+    Serial.print(' ');
     //serialFloatPrint(oTemp);
     //serialFloatPrint(oPressure);
   }
