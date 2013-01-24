@@ -14,12 +14,11 @@ void readNum(byte num, float* oTemp, float* oPressure)
   Wire.beginTransmission(0x60);
   Wire.write(0x04);
   Wire.endTransmission();
-  Wire.requestFrom(0x60+num, 8);
+  Wire.requestFrom(0x60, 8);
   int16_t a0coeff = (( (uint16_t) Wire.read() << 8) | Wire.read());
   int16_t b1coeff = (( (uint16_t) Wire.read() << 8) | Wire.read());
   int16_t b2coeff = (( (uint16_t) Wire.read() << 8) | Wire.read());
   int16_t c12coeff = (( (uint16_t) (Wire.read() << 8) | Wire.read())) >> 2;
-
   float _mpl115a2_a0 = (float)a0coeff / 8;
   float _mpl115a2_b1 = (float)b1coeff / 8192;
   float _mpl115a2_b2 = (float)b2coeff / 16384;
@@ -65,8 +64,6 @@ void loop() {
   for(int i=0;i<5;i++)
   {
     float oTemp, oPressure;
-    Serial.print(i);
-    Serial.print(' ');
     readNum(i, &oTemp, &oPressure);
     Serial.print(oTemp);
     Serial.print(' ');
