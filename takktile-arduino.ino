@@ -88,6 +88,7 @@ void loop() {
   {
     float oTemp, oPressure;
     readNum(i, &oTemp, &oPressure);
+    // Send bytes over serial instead?
     Serial.print(oTemp);
     Serial.print(' ');
     Serial.print(oPressure);
