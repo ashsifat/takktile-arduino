@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import serial, time
-f=open("asdf.csv", "w")
 try:
     i=0
     arduino = serial.Serial('/dev/tty.usbmodem1411', 9600)
@@ -8,11 +7,13 @@ try:
     while True:
         data = arduino.readline()
         if data:
-            #/print str(i) + " " + data
+            try:
+                values = [float(j) for j in data.split(" ") if len(j) > 2]
+                print values
+            except ValueError:
+                print "invalid string:"
+                print data
             #f.write(data)
             i+=1
-            if i%100==0:
-                exit()
 except:
-    print "Connection failed"
-f.close()
+    "Connection failed"
