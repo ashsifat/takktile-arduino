@@ -1,0 +1,8 @@
+package takktile;
+
+struct takktile_t
+{
+    int32_t numSensors;
+    float pressure[numSensors];
+    float temperature[numSensors];
+}
