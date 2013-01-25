@@ -13,7 +13,6 @@ try:
             except ValueError:
                 print "invalid string:"
                 print data
-            #f.write(data)
             i+=1
 except:
     "Connection failed"

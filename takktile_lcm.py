@@ -11,12 +11,12 @@ try:
         if data:
             try:
                 values = [float(j) for j in data.split(" ") if len(j) > 2]
+                print values
                 msg = takktile_t()
                 msg.numSensors = len(values)/2
                 msg.temperature = values[::2]
                 msg.pressure = values[1::2]
                 lc.publish("takktile",msg.encode())
-                print values
             except ValueError:
                 print "invalid string:"
                 print data
