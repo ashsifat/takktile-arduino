@@ -65,7 +65,7 @@ void readNum(byte num, float* oTemp, float* oPressure)
 
   // Request P/T data
   Wire.beginTransmission(0x60);
-  Wire.write(0x00);
+  Wire.write((byte)0x00);
   Wire.endTransmission();
 
   Wire.requestFrom(0x60, 4);
