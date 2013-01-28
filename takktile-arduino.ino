@@ -83,21 +83,6 @@ void readNum(byte num, float* oTemp, float* oPressure)
   //*oPressure = pressure;
   //*oTemp = temp;
 }
-// Copied from http://www.varesano.net/blog/fabio/sending-float-variables-over-serial-without-loss-precision-arduino-and-processing
-void serialFloatPrint(float f) {
-  byte * b = (byte *) &f;
-  for(int i=0; i<4; i++) {
-    
-    byte b1 = (b[i] >> 4) & 0x0f;
-    byte b2 = (b[i] & 0x0f);
-    
-    char c1 = (b1 < 10) ? ('0' + b1) : 'A' + b1 - 10;
-    char c2 = (b2 < 10) ? ('0' + b2) : 'A' + b2 - 10;
-    
-    Serial.write(c1);
-    Serial.write(c2);
-  }
-}
 void loop() {
   initialize();
   
