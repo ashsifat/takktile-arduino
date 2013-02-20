@@ -1,3 +1,32 @@
 ### Setup
 
 This howto is designed to help using the Arduino code
+
+
+### Fast I2C Communication
+
+(from here: http://arduino.cc/forum/index.php/topic,16793.0.html)
+
+the atmega-hardware can do 400 KHz, but you have to tweak the Wire-library in file hardware/libraries/Wire/utility/twi.h.
+Near the top of the file you see :
+Code:
+
+#ifndef TWI_FREQ
+#define TWI_FREQ 100000L
+#endif
+
+If you change that to
+Code:
+
+#ifndef TWI_FREQ
+#define TWI_FREQ 400000L
+
+#endif
+
+The I²C bus should run at 400kHz
+But you also have to the delete the files
+hardware/libraries/Wire/Wire.o
+hardware/libraries/Wire/utility/twi.o
+
+This will force the compiler to recompile these files.
+
