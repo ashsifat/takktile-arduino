@@ -1,8 +1,10 @@
-
 #include <Wire.h>
 // Some logic copied from https://github.com/adafruit/Adafruit_MPL115A2/
 #define NUM_SENSORS 5
-#define PRECISION 6
+#define PRECISION 2
+
+#define ADDRESS 0x00
+
 float a0[NUM_SENSORS];
 float b1[NUM_SENSORS];
 float b2[NUM_SENSORS];
@@ -28,7 +30,7 @@ void initialize() {
 void readCoeffs(byte num) {
   
   // Select sensor
-  Wire.beginTransmission(0x30+num);
+  Wire.beginTransmission(ADDRESS+num);
   Wire.endTransmission();
   
   // Request coefficients
@@ -41,7 +43,7 @@ void readCoeffs(byte num) {
   int16_t b2coeff = (( (uint16_t) Wire.read() << 8) | Wire.read());
   int16_t c12coeff = (( (uint16_t) (Wire.read() << 8) | Wire.read())) >> 2;
   // Turn sensor off
-  Wire.requestFrom(0x30+num, 1);
+  Wire.requestFrom(ADDRESS+num, 1);
   
   a0[num] = (float)a0coeff / 8;
   b1[num] = (float)b1coeff / 8192;
@@ -57,11 +59,12 @@ void setup () {
   for(int i=0;i<NUM_SENSORS;i++) {
     readCoeffs(i);
   }
+  Serial.print('This is from the Setup ..');
 }
 void readNum(byte num, float* oTemp, float* oPressure)
 {
   // Select sensor
-  Wire.beginTransmission(0x30+num);
+  Wire.beginTransmission(ADDRESS+num);
   Wire.endTransmission();
 
   // Request P/T data
@@ -74,7 +77,7 @@ void readNum(byte num, float* oTemp, float* oPressure)
   uint16_t temp = (( (uint16_t) Wire.read() << 8) | Wire.read()) >> 6;
   
   // Turn sensor off
-  Wire.requestFrom(0x30+num, 1);
+  Wire.requestFrom(ADDRESS+num, 1);
 
   float pressureComp = a0[num] + (b1[num] + c12[num]  * temp)  * pressure + b2[num] * temp;
 
@@ -84,19 +87,46 @@ void readNum(byte num, float* oTemp, float* oPressure)
   //*oPressure = pressure;
   //*oTemp = temp;
 }
+
+void checkAddresses()
+{
+  for (int i=0;i<127;i++){
+    Wire.beginTransmission(i);
+//    Wire.endTransmission();
+    if (Wire.endTransmission()==0)
+    if (1)
+    {
+      Serial.print(i<<1, HEX);      
+      Serial.print(" ");      
+    }
+  }
+}
+
 void loop() {
   initialize();
-  
+ 
+  Serial.print('From the loop'); 
   for(int i=0;i<NUM_SENSORS;i++)
   {
     float oTemp, oPressure;
     readNum(i, &oTemp, &oPressure);
-    Serial.print(oTemp,PRECISION);
-    Serial.print(' ');
-    Serial.print(oPressure,PRECISION);
-    Serial.print(' ');
+//    Serial.print('a');
+//    Serial.print(i,0);
+
+//    Serial.print(' ');
+//    Serial.print(oTemp,PRECISION);
+//    Serial.print(' ');
+//    Serial.print(oPressure,PRECISION);
+//    Serial.println(' ');
+
     //serialFloatPrint(oTemp);
     //serialFloatPrint(oPressure);
   }
-  Serial.println();
+
+  while(1)
+  {
+    checkAddresses();
+    Serial.println('3');
+    delay(500);
+  }
 }
