@@ -1,0 +1,3 @@
+### Setup
+
+This howto is designed to help using the Arduino code
