@@ -2,6 +2,7 @@
 
 This howto is designed to help using the Arduino code
 
+To download it: git clone --recursive https://github.com/TakkTile/takktile_arduino.git
 
 ### Fast I2C Communication
 

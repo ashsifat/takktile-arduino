@@ -13,6 +13,7 @@ This is a library for the TakkTile Strip sensor
 
 v1.0 - First release by Eric Bakan
 v1.1 - Updated for automatic sensor detection
+v1.2 - Updated the code for wrapping related issues (i.e 
 
 @section NOTES
 
@@ -34,7 +35,6 @@ v1.1 - Updated for automatic sensor detection
 #define SENSOR_ALL_ON 0x0C
 #define SENSOR_ALL_OFF 0x0D
 
-
 float a0[NUM_SENSORS];
 float b1[NUM_SENSORS];
 float b2[NUM_SENSORS];
@@ -42,6 +42,9 @@ float c12[NUM_SENSORS];
 
 byte addressArray[NUM_SENSORS]; 
 byte addressLength;
+
+float pressureHistory[NUM_SENSORS];
+boolean flagHistoryExists=false;
 
 boolean flagShowAddress=false;
 boolean flagShowPressure=true;
@@ -124,7 +127,7 @@ void readNum(byte addressSensor, float* oTemp, float* oPressure)
   *oPressure = ((65.0F / 1023.0F) * pressureComp) + 50.05F; // kPa
   *oTemp = ((float) temp - 498.0F) / -5.35F + 25.0F; // C
   
-  //TODO check the pressure calculations ... something is wrong with them
+  // Ignore the calibrations for the moment
   *oPressure = pressure;
   //*oTemp = temp;
 }
@@ -157,6 +160,10 @@ void loop() {
 
   float oTemp=0;
   float oPressure=0;
+  float p_current=0;
+  float p_history=0;
+  float delta_up=0;
+  float delta_down=0;
   
   initialize();
  
@@ -167,16 +174,39 @@ void loop() {
           Serial.print(',');
     }
     readNum(addressArray[i], &oTemp, &oPressure);
+
+    if (flagHistoryExists){
+	p_current=oPressure;
+	p_history=pressureHistory[i];
+	delta_up=p_current-p_history;
+	delta_down=p_history-(p_current-1024);
+	if (delta_up<delta_down){
+		oPressure=p_history+delta_up;
+	}else{
+		oPressure=p_history-delta_down;
+        }
+    }
+    pressureHistory[i]=oPressure;
+    
+    // ------------------------------
+    // Start output to the serial port
+    
     Serial.print('[');    
+
+    // Print out sensor ID value if the flag was set
     if (flagShowAddress){
       Serial.print(addressArray[i],HEX);
     }
+
+    // Print out Pressure values if the flag was set
     if (flagShowPressure){
       if (flagShowAddress){
         Serial.print(',');
       }
     Serial.print(oPressure,PRECISION);
     }
+
+    // Print out Temperature values if the flag was set
     if (flagShowTemperature){
       if (flagShowPressure){
         Serial.print(',');
@@ -186,7 +216,12 @@ void loop() {
     Serial.print(']');
   }
   Serial.println(']');
+
+    // End output to the serial port
+    // ------------------------------
+  flagHistoryExists=true;
   
+  // Listen to the commands from the serial port
   if (Serial.available()){
     byte inByte = (byte)
     Serial.read();
