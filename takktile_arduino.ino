@@ -50,6 +50,10 @@ boolean flagShowAddress=false;
 boolean flagShowPressure=true;
 boolean flagShowTemperature=false;
 
+int valueMax;
+int valueCurrent;
+int valueInit;
+
 void initialize() {
     // s 0C
   Wire.beginTransmission(SENSOR_ALL_ON>>1);
@@ -95,14 +99,23 @@ void readCoeffs(byte addressSensor, byte num) {
 void setup () {
   Wire.begin();
   Serial.begin(115200);
-  
+
+  pinMode(A0, OUTPUT);
+  pinMode(A1, OUTPUT);
+  pinMode(A2, OUTPUT);
+  pinMode(A3, OUTPUT);
+  pinMode(A4, OUTPUT);
+  pinMode(A5, OUTPUT);
+
   checkAddresses(); // check how many sensors are connected
   
   // for each found sensor, read the coefficients ..
   for(int i=0;i<addressLength;i++) {
     readCoeffs(addressArray[i],i);
   }
+  
 }
+
 void readNum(byte addressSensor, float* oTemp, float* oPressure)
 {
   // Select sensor
@@ -156,6 +169,28 @@ void checkAddresses()
   }
 }
 
+void displayLED(int number, int maxNumber){
+
+int result=6*number/maxNumber;
+
+  for(int i=0;i<result;i++)
+  {
+    digitalWrite(A0+i, HIGH);
+    digitalWrite(19, HIGH);
+    digitalWrite(20, HIGH);
+    digitalWrite(21, HIGH);
+    digitalWrite(22, HIGH);
+    digitalWrite(23, HIGH);
+  }
+  for(int i=result;i<6;i++)
+  {
+    digitalWrite(A0+i, LOW);
+  }
+    Serial.print(number);
+    Serial.print('|');
+    Serial.print(maxNumber);    
+}
+
 void loop() {
 
   float oTemp=0;
@@ -164,7 +199,7 @@ void loop() {
   float p_history=0;
   float delta_up=0;
   float delta_down=0;
-  
+    
   initialize();
  
   Serial.print('[');
@@ -186,6 +221,7 @@ void loop() {
 		oPressure=p_history-delta_down;
         }
     }
+    
     pressureHistory[i]=oPressure;
     
     // ------------------------------
@@ -217,8 +253,16 @@ void loop() {
   }
   Serial.println(']');
 
-    // End output to the serial port
-    // ------------------------------
+  // End output to the serial port
+  // ------------------------------
+  
+  if (!flagHistoryExists){
+    valueInit=pressureHistory[0];
+    valueMax=100;
+  } else {
+     displayLED(abs(pressureHistory[0]-valueInit),valueMax);
+  }
+  
   flagHistoryExists=true;
   
   // Listen to the commands from the serial port
@@ -230,4 +274,5 @@ void loop() {
     if (inByte=='t') { flagShowTemperature = !flagShowTemperature; }
     
   }
+  
 }
