@@ -50,6 +50,7 @@ boolean flagShowAddress=false;
 boolean flagShowPressure=true;
 boolean flagShowTemperature=false;
 
+// used for LEDs
 int valueMax;
 int valueCurrent;
 int valueInit;
