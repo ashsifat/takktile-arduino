@@ -51,9 +51,9 @@ boolean flagShowPressure=true;
 boolean flagShowTemperature=false;
 
 // used for LEDs
-int valueMax;
-int valueCurrent;
-int valueInit;
+int valueMax[5];
+int valueCurrent[5];
+int valueInit[5];
 
 void initialize() {
     // s 0C
@@ -172,7 +172,16 @@ void checkAddresses()
 
 void displayLED(int number, int maxNumber){
 
-int result=6*number/maxNumber;
+int LEDs=6;
+int resultLinear=LEDs*number/maxNumber;
+int result=resultLinear;
+
+float scalingFactor=(LEDs+1)/log(maxNumber);
+int logThresh=10;
+float resultLog=(log(number-logThresh)*scalingFactor);
+  
+//  result=resultLinear;
+  result=resultLog;   // Show LOG results
 
   for(int i=0;i<result;i++)
   {
@@ -258,12 +267,24 @@ void loop() {
   // ------------------------------
   
   if (!flagHistoryExists){
-    valueInit=pressureHistory[0];
-    valueMax=100;
+    valueInit[0]=pressureHistory[0];
+    valueInit[4]=pressureHistory[4];
+    valueMax[0]=100;  // [0] is the closest to the Attiny
+    valueMax[4]=50;
   } else {
-     displayLED(abs(pressureHistory[0]-valueInit),valueMax);
+     displayLED(abs(pressureHistory[4]-valueInit[4]),valueMax[4]);
+     
+     // update maximum
+     if (abs(pressureHistory[4]-valueInit[4])>valueMax[4]){
+       valueMax[4]=abs(pressureHistory[4]-valueInit[4]);
+     }
+     
+     // first button (from attiny) is the calibration button
+     if (abs(pressureHistory[0]-valueInit[0])>valueMax[0]) {
+        valueInit[4]=pressureHistory[4];       
+     }
   }
-  
+ 
   flagHistoryExists=true;
   
   // Listen to the commands from the serial port
