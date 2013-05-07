@@ -13,7 +13,8 @@ This is a library for the TakkTile Strip sensor
 
 v1.0 - First release by Eric Bakan
 v1.1 - Updated for automatic sensor detection
-v1.2 - Updated the code for wrapping related issues (i.e 
+v1.2 - Updated the code for wrapping related issues (i.e
+v1.3 - Updated the code to reduce transmitted data bytes
 
 @section NOTES
 
@@ -29,7 +30,7 @@ v1.2 - Updated the code for wrapping related issues (i.e
 #include <Wire.h>
 
 #define NUM_SENSORS 10*5 // reserve addresses for 10 strips with 5 sensors on each
-#define PRECISION 2
+#define PRECISION 0
 
 #define FREESCALE_ADDRESS 0xC0
 #define SENSOR_ALL_ON 0x0C
@@ -40,7 +41,7 @@ float b1[NUM_SENSORS];
 float b2[NUM_SENSORS];
 float c12[NUM_SENSORS];
 
-byte addressArray[NUM_SENSORS]; 
+byte addressArray[NUM_SENSORS];
 byte addressLength;
 
 float pressureHistory[NUM_SENSORS];
@@ -121,7 +122,7 @@ void readNum(byte addressSensor, float* oTemp, float* oPressure)
   // Turn sensor off
   Wire.requestFrom(addressSensor>>1, 1);
 
-  float pressureComp = a0[addressSensor] + (b1[addressSensor] + c12[addressSensor]  * temp)  * pressure + b2[addressSensor] * temp;
+  float pressureComp = a0[addressSensor] + (b1[addressSensor] + c12[addressSensor] * temp) * pressure + b2[addressSensor] * temp;
 
   // Calculate temp & pressure
   *oPressure = ((65.0F / 1023.0F) * pressureComp) + 50.05F; // kPa
@@ -140,15 +141,15 @@ void checkAddresses()
   for (int strip_n=0;strip_n<10;strip_n++){
     // check every sensor
     for (int sensor_n=0;sensor_n<5;sensor_n++){
-      temp_add=(strip_n<<4)+sensor_n*2;       // calculate the address 
+      temp_add=(strip_n<<4)+sensor_n*2; // calculate the address
 
       // check if the Attiny responds with its address
       Wire.beginTransmission(temp_add>>1); // take into account that its 7bit !
-      if (Wire.endTransmission()==0)  
+      if (Wire.endTransmission()==0)
       {
-        // check if there is a sensor on this line        
+        // check if there is a sensor on this line
         Wire.beginTransmission(FREESCALE_ADDRESS>>1);
-        if (Wire.endTransmission()==0)  
+        if (Wire.endTransmission()==0)
           addressArray[addressLength]=temp_add;
           addressLength++;
       }
@@ -176,14 +177,14 @@ void loop() {
     readNum(addressArray[i], &oTemp, &oPressure);
 
     if (flagHistoryExists){
-	p_current=oPressure;
-	p_history=pressureHistory[i];
-	delta_up=p_current-p_history;
-	delta_down=p_history-(p_current-1024);
-	if (delta_up<delta_down){
-		oPressure=p_history+delta_up;
-	}else{
-		oPressure=p_history-delta_down;
+p_current=oPressure;
+p_history=pressureHistory[i];
+delta_up=p_current-p_history;
+delta_down=p_history-(p_current-1024);
+if (delta_up<delta_down){
+oPressure=p_history+delta_up;
+}else{
+oPressure=p_history-delta_down;
         }
     }
     pressureHistory[i]=oPressure;
@@ -191,7 +192,7 @@ void loop() {
     // ------------------------------
     // Start output to the serial port
     
-    Serial.print('[');    
+    Serial.print('[');
 
     // Print out sensor ID value if the flag was set
     if (flagShowAddress){
