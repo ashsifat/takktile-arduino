@@ -34,7 +34,7 @@ drawData6 = zeros(1,100); drawData7 = zeros(1,100); drawData8 = zeros(1,100); dr
 drawData11 = zeros(1,100); drawData12 = zeros(1,100); drawData13 = zeros(1,100); drawData14 = zeros(1,100); drawData15 = zeros(1,100);
 drawData16 = zeros(1,100); drawData17 = zeros(1,100); drawData18 = zeros(1,100); drawData19 = zeros(1,100); drawData20 = zeros(1,100);
 % figure
-s = serial('COM11'); % for windows
+s = serial('COM4'); % for windows
 % s = serial('/dev/ttyACM0'); % for ubuntu
 
 set(s,'Baudrate',115200);
@@ -71,9 +71,8 @@ while (1)
         
             
         % write nums into a text file with time stamp
-         dlmwrite('data.txt', [clock num1 num2 num3 num4 num5],'-append', 'delimiter', '\t', 'newline', 'pc')
-%        dlmwrite('20130819_calib_4_2.txt', [clock cc],'-append', 'delimiter', '\t', 'newline', 'pc')
-    
+         dlmwrite('data.txt', [clock cc],'-append', 'delimiter', '\t', 'newline', 'pc')
+  
             
         drawData1 = [drawData1(2:end) cc(1)];
         drawData2 = [drawData2(2:end) cc(2)];
