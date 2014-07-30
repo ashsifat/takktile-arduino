@@ -13,7 +13,7 @@ This is a library for the TakkTile Strip sensor
 
 v1.0 - First release by Eric Bakan
 v1.1 - Updated for automatic sensor detection
-v1.2 - Updated the code for wrapping related issues (i.e
+v1.2 - Updated the code for wrapping related issues
 v1.3 - Updated the code to reduce transmitted data bytes
 
 @section NOTES
@@ -29,7 +29,7 @@ v1.3 - Updated the code to reduce transmitted data bytes
 
 #include <Wire.h>
 
-#define NUM_SENSORS 10*5 // reserve addresses for 10 strips with 5 sensors on each
+#define NUM_SENSORS 10*6 // reserve addresses for 10 strips with 6 sensors on each
 #define PRECISION 0
 
 #define FREESCALE_ADDRESS 0xC0
@@ -140,7 +140,7 @@ void checkAddresses()
   // check every strip
   for (int strip_n=0;strip_n<10;strip_n++){
     // check every sensor
-    for (int sensor_n=0;sensor_n<5;sensor_n++){
+    for (int sensor_n=0;sensor_n<6;sensor_n++){
       temp_add=(strip_n<<4)+sensor_n*2; // calculate the address
 
       // check if the Attiny responds with its address
@@ -177,15 +177,15 @@ void loop() {
     readNum(addressArray[i], &oTemp, &oPressure);
 
     if (flagHistoryExists){
-p_current=oPressure;
-p_history=pressureHistory[i];
-delta_up=p_current-p_history;
-delta_down=p_history-(p_current-1024);
-if (delta_up<delta_down){
-oPressure=p_history+delta_up;
-}else{
-oPressure=p_history-delta_down;
-        }
+      p_current=oPressure;
+      p_history=pressureHistory[i];
+      delta_up=p_current-p_history;
+      delta_down=p_history-(p_current-1024);
+      if (delta_up<delta_down){
+        oPressure=p_history+delta_up;
+      }else{
+        oPressure=p_history-delta_down;
+      }
     }
     pressureHistory[i]=oPressure;
     
