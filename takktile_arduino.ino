@@ -29,12 +29,16 @@ v1.3 - Updated the code to reduce transmitted data bytes
 
 #include <Wire.h>
 
-#define NUM_SENSORS 10*6 // reserve addresses for 10 strips with 6 sensors on each
+#define MAX_STRIPS 8
+#define MAX_SENSORS 6
+
+#define NUM_SENSORS MAX_STRIPS*MAX_SENSORS // reserve addresses for 8 strips with 6 sensors on each
 #define PRECISION 0
 
 #define FREESCALE_ADDRESS 0xC0
 #define SENSOR_ALL_ON 0x0C
 #define SENSOR_ALL_OFF 0x0D
+
 
 float a0[NUM_SENSORS];
 float b1[NUM_SENSORS];
@@ -98,13 +102,13 @@ void setup () {
   Serial.begin(115200);
   
   checkAddresses(); // check how many sensors are connected
-  
+ 
   // for each found sensor, read the coefficients ..
   for(int i=0;i<addressLength;i++) {
     readCoeffs(addressArray[i],i);
   }
 }
-void readNum(byte addressSensor, float* oTemp, float* oPressure)
+void readData(byte addressSensor, float* oTemp, float* oPressure)
 {
   // Select sensor
   Wire.beginTransmission(addressSensor>>1);
@@ -122,13 +126,16 @@ void readNum(byte addressSensor, float* oTemp, float* oPressure)
   // Turn sensor off
   Wire.requestFrom(addressSensor>>1, 1);
 
-  float pressureComp = a0[addressSensor] + (b1[addressSensor] + c12[addressSensor] * temp) * pressure + b2[addressSensor] * temp;
+  // ------ Ignore the calibrations for the moment
+  
+  //float pressureComp = a0[addressSensor] + (b1[addressSensor] + c12[addressSensor] * temp) * pressure + b2[addressSensor] * temp;
 
   // Calculate temp & pressure
-  *oPressure = ((65.0F / 1023.0F) * pressureComp) + 50.05F; // kPa
-  *oTemp = ((float) temp - 498.0F) / -5.35F + 25.0F; // C
+  //*oPressure = ((65.0F / 1023.0F) * pressureComp) + 50.05F; // kPa
+  //*oTemp = ((float) temp - 498.0F) / -5.35F + 25.0F; // C
   
-  // Ignore the calibrations for the moment
+  // ------ 
+
   *oPressure = pressure;
   //*oTemp = temp;
 }
@@ -138,22 +145,28 @@ void checkAddresses()
   addressLength=0;
   int temp_add=0;
   // check every strip
-  for (int strip_n=0;strip_n<10;strip_n++){
+  for (int strip_n=0;strip_n<MAX_STRIPS;strip_n++){
     // check every sensor
-    for (int sensor_n=0;sensor_n<6;sensor_n++){
+    for (int sensor_n=0;sensor_n<MAX_SENSORS;sensor_n++){
       temp_add=(strip_n<<4)+sensor_n*2; // calculate the address
 
       // check if the Attiny responds with its address
+      // this also switches ON the Chip Select line on the desired sensor
       Wire.beginTransmission(temp_add>>1); // take into account that its 7bit !
-      if (Wire.endTransmission()==0)
-      {
+      // if response finishes with an ACK then continue
+      if (Wire.endTransmission()==0) {
         // check if there is a sensor on this line
         Wire.beginTransmission(FREESCALE_ADDRESS>>1);
-        if (Wire.endTransmission()==0)
+        // if there is an ACK then there is a sensor
+        if (Wire.endTransmission()==0){
           addressArray[addressLength]=temp_add;
           addressLength++;
+        }
+        // Turn off the chip select line
+        Wire.requestFrom(temp_add>>1, 1);
       }
     }
+    Serial.println(']');
   }
 }
 
@@ -174,8 +187,10 @@ void loop() {
     if (i>0){
           Serial.print(',');
     }
-    readNum(addressArray[i], &oTemp, &oPressure);
+    readData(addressArray[i], &oTemp, &oPressure);
 
+    // the calculations of the wrapping
+    // that are used to calculate the minus signs
     if (flagHistoryExists){
       p_current=oPressure;
       p_history=pressureHistory[i];
@@ -193,7 +208,8 @@ void loop() {
     // Start output to the serial port
     
     Serial.print('[');
-
+    
+    Serial.print('[');
     // Print out sensor ID value if the flag was set
     if (flagShowAddress){
       Serial.print(addressArray[i],HEX);
@@ -217,7 +233,7 @@ void loop() {
     Serial.print(']');
   }
   Serial.println(']');
-
+ 
     // End output to the serial port
     // ------------------------------
   flagHistoryExists=true;
